@@ -1,0 +1,12 @@
+---
+import type { PersonneResponse } from '../pocketbase-typegen';
+
+
+
+interface Props {
+  personne: PersonneResponse<"personnes">;
+}
+const { personne } = Astro.props;
+---
+
+<>: <a href={`/personnes/${personne.id}`} class="text-blue-700 hover:underline">{personne.nom}</a></>
