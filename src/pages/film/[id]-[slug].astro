@@ -1,4 +1,6 @@
 ---
+import LinkPersonne from "../../components/LinkPersonne.astro";
+import Layout from "../../layouts/Layout.astro";
 import type {
   FilmsResponse,
   PersonneResponse,
@@ -21,6 +23,7 @@ const film = await Astro.locals.pb
 ---
 
 <!-- Affichage d'un seul film -->
+ <Layout pageTitle="Film">
 <div>
         <h2>Film : {film.titre}</h2>
         <p>Année de sortie : {film.date_sortie}</p>
@@ -30,6 +33,7 @@ const film = await Astro.locals.pb
         { film.expand?.role &&  <p>Les roles : 
             {film.expand?.role.map(r => 
             <span>Nom du role : {r.nom_role + ", "}</span> 
-            <span>Joué par : {r.expand?.acteur.nom +", "}</span>)}</p>
+            <span>Joué par : <LinkPersonne {...r.expand?.acteur!}></span>)}</p>
         }
 </div>
+</Layout>

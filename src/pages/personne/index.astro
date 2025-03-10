@@ -1,58 +1,17 @@
 ---
-import { Debug } from "astro:components";
 import Layout from "../../layouts/Layout.astro";
-import type {
-  FilmsResponse,
-  PersonneResponse,
-  RolesResponse,
-} from "../../pocketbase-typegen";
-
+import LinkPersonne from "../../components/LinkPersonne.astro";
+import type { PersonneResponse } from "../../pocketbase-typegen";
 export const prerender = false;
 
-const personnes = await Astro.locals.pb
-  .collection<
-    PersonneResponse<{
-      films_via_producteur?: FilmsResponse[];
-      films_via_scenaristes?: FilmsResponse[];
-      roles_via_acteur?: RolesResponse[];
-    }>
-  >("personne")
-  .getFullList({
-    expand: "films_via_producteur, films_via_scenaristes, roles_via_acteur",
-  });
+const listPersonnes = await Astro.locals.pb.collection("personne").getFullList();
+
+type Props = PersonneResponse
+
+const personne = Astro.props
 ---
 
-<!-- <pre>
-    {JSON.stringify(personnes, null, 2)}
-</pre> -->
 <Layout pageTitle="Liste des personnes">
-  {
-    personnes.map((personne) => (
-      <div>
-        <h2>Personne : {personne.nom}</h2>
-        <h2>Les rôles : </h2>
-        {personne.expand?.roles_via_acteur && (
-          <p>
-            Le casting :{" "}
-            {personne.expand?.roles_via_acteur?.map((role) => (
-              <span>{role.nom_role +"Joué par"+ " "}</span>
-            ))}
-          </p>
-        )}
-        <p>
-          Les films où il est producteur : {""}
-          {personne.expand?.films_via_producteur?.map((film) => (
-            <span>{film.titre + " "}</span>
-          ))}
-        </p>
-        <p>
-          Les films où il est scénariste : {""}
-          {personne.expand?.films_via_scenaristes?.map((film) => (
-            <span>{film.titre + " "}</span>
-          ))}
-        </p>
-      </div>
-    ))
-  }
+  {listPersonnes.map((personne) => <LinkPersonne personne={personne} />)}
+  <!-- <Debug {listFilms} /> -->
 </Layout>
-<Debug {personnes} />
