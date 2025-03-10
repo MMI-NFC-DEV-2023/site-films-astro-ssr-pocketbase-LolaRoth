@@ -4,11 +4,12 @@ import PocketBase from "pocketbase";
 import { defineMiddleware } from "astro/middleware";
 
 export const onRequest = defineMiddleware(
-  async ({ locals, request } , next: () => any) => {
-    console.log(import.meta.env.VITE_URL_POCKETBASE);
+  async ({ locals, request, isPrerendered } , next: () => any) => {
+    console.log(import.meta.env.PUBLIC_POKEAPI);
     
-    locals.pb = new PocketBase(import.meta.env.VITE_URL_POCKETBASE);
 
+      locals.pb = new PocketBase(import.meta.env.PUBLIC_POKEAPI);
+  if (!isPrerendered) {
     // load the store data from the request cookie string
     locals.pb.authStore.loadFromCookie(request.headers.get("cookie") || "");
 
@@ -20,6 +21,7 @@ export const onRequest = defineMiddleware(
       // clear the auth store on failed refresh
       locals.pb.authStore.clear();
     }
+  }
 
     const response = await next();
 
