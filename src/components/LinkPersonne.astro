@@ -8,6 +8,6 @@ type Props = PersonneResponse;
 const personne = Astro.props;
 ---
 
-<a href={`/personne/${personne.id}-${slugger.slug(personne.nom)}`} class="lien"
+<a href={`/personne/${personne.id}-${slugger.slug(personne.nom)}`} class="underline text-purple-400"
   >{personne.nom + " " + personne.nom}</a
 >

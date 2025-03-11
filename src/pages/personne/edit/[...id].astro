@@ -55,7 +55,7 @@ function formatDate(date: string) {
         <select name="nationalite">
           {
             Object.entries(PersonneNationaliteOptions).map(([key, value]) => (
-              <option selected={personne.nationalite}>{key}</option>
+              <option selected={personne.nationalite === value}>{key}</option>
             ))
           }
         </select>

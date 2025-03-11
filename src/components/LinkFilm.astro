@@ -9,6 +9,7 @@ type Props = FilmsResponse;
 const film = Astro.props;
 ---
 
-<a href={`/film/${film.id}-${slugger.slug(film.titre)}`}
-  >{film.titre}</a
+<a
+  class="underline text-purple-400 mx-2 "
+   href={`/film/${film.id}-${slugger.slug(film.titre)}`}>{film.titre}</a
 >
