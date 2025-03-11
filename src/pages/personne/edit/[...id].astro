@@ -13,6 +13,10 @@ if (Astro.request.method === "POST") {
   const personne = await pb.collection("personne").create(data);
   return Astro.redirect(`/personne/${personne.id}-${personne.nom}`);
 }
+
+function formatDate(date: string) {
+  return date ? new Date(date).toISOString().split("T")[0] : "";
+}
 ---
 
 <Layout pageTitle="Edit">
@@ -32,9 +36,7 @@ if (Astro.request.method === "POST") {
         <input
           type="date"
           name="DateNaissance"
-          value={personne.DateNaissance
-            ? new Date(personne.DateNaissance).toISOString().split("T")[0]
-            : ""}
+          value={formatDate(personne.DateNaissance)}
         />
       </label>
       <label
@@ -42,9 +44,7 @@ if (Astro.request.method === "POST") {
         <input
           type="date"
           name="DateDeces"
-          value={personne.DateDeces
-            ? new Date(personne.DateDeces).toISOString().split("T")[0]
-            : ""}
+          value={formatDate(personne.DateDeces)}
         />
       </label>
       <label
