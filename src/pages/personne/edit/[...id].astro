@@ -2,7 +2,10 @@
 import { Debug } from "astro:components";
 import { pb } from "../../../backend";
 import Layout from "../../../layouts/Layout.astro";
-import { PersonneProfessionOptions } from "../../../pocketbase-typegen";
+import {
+  PersonneNationaliteOptions,
+  PersonneProfessionOptions,
+} from "../../../pocketbase-typegen";
 export const prerender = false;
 const id = Astro.params.id;
 
@@ -10,7 +13,8 @@ const personne = await Astro.locals.pb.collection("personne").getOne(id!);
 
 if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
-  const personne = await pb.collection("personne").create(data);
+  const personne = await (id? pb.collection("personne").update(id, data)
+  : pb.collection("personne").create(data));
   return Astro.redirect(`/personne/${personne.id}-${personne.nom}`);
 }
 
@@ -23,12 +27,17 @@ function formatDate(date: string) {
   <h1 class="text-center text-2xl text-pink-600 my-4">Ajouter une personne</h1>
   <section class="mx-8">
     <form method="post" class="*:contents grid grid-cols-2">
+      <input type="hidden" name="id" value={personne.id} />
       <label class="m-3"
         >nationalite
         <select name="nationalite">
-          <option>US</option>
-          <option>FR</option>
-          <option>UK</option>
+          {
+            Object.entries(PersonneNationaliteOptions).map(([key, value]) => (
+              <option selected={personne.nationalite}>
+                {key}
+              </option>
+            ))
+          }
         </select>
       </label>
       <label
@@ -60,7 +69,12 @@ function formatDate(date: string) {
         <select name="profession" multiple>
           {
             Object.entries(PersonneProfessionOptions).map(([key, value]) => (
-              <option value={key}>{value}</option>
+              <option
+                selected={personne.profession.includes(value)}
+                value={value}
+              >
+                {key}
+              </option>
             ))
           }
         </select>
