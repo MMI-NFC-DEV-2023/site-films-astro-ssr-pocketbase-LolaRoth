@@ -6,16 +6,26 @@ import {
   PersonneNationaliteOptions,
   PersonneProfessionOptions,
 } from "../../../pocketbase-typegen";
+import type { PersonneResponse } from "../../../pocketbase-typegen";
+import GithubSlugger from "github-slugger";
+
+const slugger = new GithubSlugger();
 export const prerender = false;
 const id = Astro.params.id;
 
-const personne = await Astro.locals.pb.collection("personne").getOne(id!);
+const personne = id
+  ? await Astro.locals.pb.collection("personne").getOne(id)
+  : ({} as PersonneResponse);
+// pour faire une personne vide ou une prendre les donnnées d'une personne existante
 
 if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
-  const personne = await (id? pb.collection("personne").update(id, data)
-  : pb.collection("personne").create(data));
-  return Astro.redirect(`/personne/${personne.id}-${personne.nom}`);
+  const personne = await (id
+    ? pb.collection("personne").update(id, data)
+    : pb.collection("personne").create(data));
+  return Astro.redirect(
+    `/personne/${personne.id}-${encodeURIComponent(personne.nom)}`
+  );
 }
 
 function formatDate(date: string) {
@@ -33,9 +43,7 @@ function formatDate(date: string) {
         <select name="nationalite">
           {
             Object.entries(PersonneNationaliteOptions).map(([key, value]) => (
-              <option selected={personne.nationalite}>
-                {key}
-              </option>
+              <option selected={personne.nationalite}>{key}</option>
             ))
           }
         </select>
@@ -58,11 +66,15 @@ function formatDate(date: string) {
       </label>
       <label
         >Lieu Naissance
-        <input type="text" name="lieuNaissance" />
+        <input
+          type="text"
+          name="lieuNaissance"
+          value={personne.lieuNaissance}
+        />
       </label>
       <label
         >Nom
-        <input type="text" name="nom" />
+        <input type="text" name="nom" value={personne.nom} />
       </label>
       <label>
         Profession
@@ -70,7 +82,7 @@ function formatDate(date: string) {
           {
             Object.entries(PersonneProfessionOptions).map(([key, value]) => (
               <option
-                selected={personne.profession.includes(value)}
+                selected={personne.profession?.includes(value)}
                 value={value}
               >
                 {key}
