@@ -1,51 +1,71 @@
 ---
+import { Debug } from "astro:components";
 import { pb } from "../../../backend";
 import Layout from "../../../layouts/Layout.astro";
 import { PersonneProfessionOptions } from "../../../pocketbase-typegen";
 export const prerender = false;
+const id = Astro.params.id;
+
+const personne = await Astro.locals.pb.collection("personne").getOne(id!);
 
 if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
-  const personne = await pb.collection("personne").create(data)
+  const personne = await pb.collection("personne").create(data);
   return Astro.redirect(`/personne/${personne.id}-${personne.nom}`);
 }
 ---
 
 <Layout pageTitle="Edit">
-  <h1>Edit personne</h1>
-  <form method="post" class="*:contents grid grid-cols-2 ">
-    <label
-      >nationalite
-      <select name="nationalite">
-        <option>US</option>
-        <option>FR</option>
-        <option>UK</option>
-      </select>
-    </label>
-    <label
-      >Date Naissance
-      <input type="date" name="DateNaissance" />
-    </label>
-    <label
-      >Date Décès
-      <input type="date" name="DateDeces" />
-    </label>
-    <label
-      >Lieu Naissance
-      <input type="text" name="lieuNaissance" />
-    </label>
-    <label
-      >Nom
-      <input type="text" name="nom" />
-    </label>
-    <label>
+  <h1 class="text-center text-2xl text-pink-600 my-4">Ajouter une personne</h1>
+  <section class="mx-8">
+    <form method="post" class="*:contents grid grid-cols-2">
+      <label class="m-3"
+        >nationalite
+        <select name="nationalite">
+          <option>US</option>
+          <option>FR</option>
+          <option>UK</option>
+        </select>
+      </label>
+      <label
+        >Date Naissance
+        <input
+          type="date"
+          name="DateNaissance"
+          value={personne.DateNaissance
+            ? new Date(personne.DateNaissance).toISOString().split("T")[0]
+            : ""}
+        />
+      </label>
+      <label
+        >Date Décès
+        <input
+          type="date"
+          name="DateDeces"
+          value={personne.DateDeces
+            ? new Date(personne.DateDeces).toISOString().split("T")[0]
+            : ""}
+        />
+      </label>
+      <label
+        >Lieu Naissance
+        <input type="text" name="lieuNaissance" />
+      </label>
+      <label
+        >Nom
+        <input type="text" name="nom" />
+      </label>
+      <label>
         Profession
         <select name="profession" multiple>
-            {Object.entries(PersonneProfessionOptions).map(([key, value]) => (
-                <option value={key}>{value}</option>
-            ))}
+          {
+            Object.entries(PersonneProfessionOptions).map(([key, value]) => (
+              <option value={key}>{value}</option>
+            ))
+          }
         </select>
-    </label>
-    <button>Envoyer</button>
-  </form>
+      </label>
+      <button>Envoyer</button>
+    </form>
+  </section>
 </Layout>

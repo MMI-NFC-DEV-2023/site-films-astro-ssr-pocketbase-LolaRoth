@@ -4,14 +4,25 @@ import LinkPersonne from "../../components/LinkPersonne.astro";
 import type { PersonneResponse } from "../../pocketbase-typegen";
 export const prerender = false;
 
-const listPersonnes = await Astro.locals.pb.collection("personne").getFullList();
+const listPersonnes = await Astro.locals.pb
+  .collection("personne")
+  .getFullList();
 
-type Props = PersonneResponse
+type Props = PersonneResponse;
 
-const personne = Astro.props
+const personne = Astro.props;
 ---
 
 <Layout pageTitle="Liste des personnes">
-  {listPersonnes.map((personne) => <LinkPersonne personne={personne} />)}
+  <ul>
+    {
+      listPersonnes.map((personne) => (
+        <li>
+          <LinkPersonne {...personne} />
+        </li>
+      ))
+    }
+  </ul>
+  <a href="../personne/edit">Ajouter une personne</a>
   <!-- <Debug {listFilms} /> -->
 </Layout>

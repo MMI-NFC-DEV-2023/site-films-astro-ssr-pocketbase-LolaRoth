@@ -30,10 +30,10 @@ const film = await Astro.locals.pb
         {  film.expand?.producteur &&      <p>Producteur : {film.expand?.producteur.nom}</p>}        
         {film.expand?.scenaristes && <p>Scénaristes : {film.expand?.scenaristes.map(s => (<span>{s.nom + ", "}</span>))}</p>}
         <p>Durée : {film.duree} minutes</p>
-        { film.expand?.role &&  <p>Les roles : 
-            {film.expand?.role.map(r => 
-            <span>Nom du role : {r.nom_role + ", "}</span> 
-            <span>Joué par : <LinkPersonne {...r.expand?.acteur!}></span>)}</p>
-        }
+        { film.expand?.role &&  <p>Les roles :
+              {film.expand?.role.map(r =>
+              <span>Nom du role : {r.nom_role + ", "}</span>
+              <span>Joué par : <LinkPersonne {...r.expand?.acteur!} /> </span>)}</p>
+          }
 </div>
 </Layout>
