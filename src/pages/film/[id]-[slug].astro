@@ -20,20 +20,27 @@ const film = await Astro.locals.pb
     }>
   >("films")
   .getOne(id!, { expand: "producteur, scenaristes, role.acteur" });
+
+
 ---
 
 <!-- Affichage d'un seul film -->
  <Layout pageTitle="Film">
+   {Astro.locals.pb.authStore.isValid && <a href={`/film/edit/${film.id}`}>Edit</a>}
+    
 <div>
         <h2>Film : {film.titre}</h2>
         <p>Année de sortie : {film.date_sortie}</p>
         {  film.expand?.producteur &&      <p>Producteur : {film.expand?.producteur.nom}</p>}        
         {film.expand?.scenaristes && <p>Scénaristes : {film.expand?.scenaristes.map(s => (<span>{s.nom + ", "}</span>))}</p>}
-        <p>Durée : {film.duree} minutes</p>
+        <p class="mb-6">Durée : {film.duree} minutes</p>
         { film.expand?.role &&  <p>Les roles :
               {film.expand?.role.map(r =>
               <span>Nom du role : {r.nom_role + ", "}</span>
               <span>Joué par : <LinkPersonne {...r.expand?.acteur!} /> </span>)}</p>
           }
+          <a href={`/film/ajoutRole/${id}`} class="text-white bg-gradient-to-r from-pink-400 via-pink-500 to-pink-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-pink-300 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 m-6">Ajouter un rôle</a>
 </div>
+
+
 </Layout>

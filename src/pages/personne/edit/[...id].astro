@@ -7,8 +7,18 @@ import {
   PersonneProfessionOptions,
 } from "../../../pocketbase-typegen";
 import type { PersonneResponse } from "../../../pocketbase-typegen";
+import type { ClientResponseError } from "pocketbase";
 export const prerender = false;
 const id = Astro.params.id;
+
+let message = "";
+
+if (id){
+    const personne = await pb.collection("personne").getOne(id).catch((e) => {
+        message = (e as ClientResponseError).message;
+        return {} as PersonneResponse;
+    });
+}
 
 const personne = id
   ? await Astro.locals.pb.collection("personne").getOne(id)
@@ -17,12 +27,16 @@ const personne = id
 
 if (Astro.request.method === "POST") {
   const data = await Astro.request.formData();
+  try {
   const personne = await (id
     ? pb.collection("personne").update(id, data)
     : pb.collection("personne").create(data));
   return Astro.redirect(
     `/personne/${personne.id}-${encodeURIComponent(personne.nom)}`
   );
+} catch (e) {
+    message = (e as ClientResponseError).message;
+    }
 }
 
 function formatDate(date: string) {
@@ -31,6 +45,7 @@ function formatDate(date: string) {
 ---
 
 <Layout pageTitle="Edit">
+    {message && <p class="text-red-500"> Erreur : {message}</p>}
   <h1 class="text-center text-2xl text-pink-600 my-4">Ajouter une personne</h1>
   <section class="mx-8">
     <form method="post" class="*:contents grid grid-cols-2">
@@ -89,7 +104,7 @@ function formatDate(date: string) {
           ))
         }
       </fieldset>
-      <button>Envoyer</button>
+      <button >{id? "Modifier" : "Ajouter"}</button>
     </form>
   </section>
 </Layout>

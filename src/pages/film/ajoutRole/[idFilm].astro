@@ -1,0 +1,36 @@
+---
+export const prerender = false;
+const { idFilm } = Astro.params;
+const personne = await Astro.locals.pb.collection("personne").getFullList();
+console.log("je suis ici");
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  const role = await Astro.locals.pb.collection("roles").create(data);
+  const film = await Astro.locals.pb.collection("films").update(idFilm!, {
+    "+role": role.id,
+  });
+  if (role) {
+    return Astro.redirect(`/film/${idFilm}-${encodeURIComponent(film.titre)}`);
+  }
+}
+---
+
+<form method="POST">
+  <label
+    >Role
+    <input type="text" name="nomRole" />
+  </label>
+  <label
+    >Acteur
+    <select name="acteur">
+      <!-- <option value="720527e4grhrr5w">Harry Potter</option>
+        <option value="q00u4xevq1fz05l">Leonardo Di Caprio</option> -->
+      {
+        personne.map((personne) => (
+          <option value={personne.id}>{personne.nom}</option>
+        ))
+      }
+    </select>
+  </label>
+  <button>Envoyer</button>
+</form>

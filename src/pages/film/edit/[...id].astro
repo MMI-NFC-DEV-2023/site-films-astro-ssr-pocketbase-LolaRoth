@@ -1,0 +1,125 @@
+---
+import type { ClientResponseError } from "pocketbase";
+import { pb } from "../../../backend";
+import Layout from "../../../layouts/Layout.astro";
+import {
+  FilmsLangueOptions,
+  type FilmsResponse,
+} from "../../../pocketbase-typegen";
+const id = Astro.params.id;
+export const prerender = false;
+
+// let film = {} as FilmsResponse;
+let message = "";
+
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  const film = await pb.collection("films").create(data);
+  return Astro.redirect(`/film/${film.id}-${encodeURIComponent(film.titre)}`);
+}
+
+if (Astro.request.method === "POST") {
+  const data = await Astro.request.formData();
+  try {
+    const film = await (id
+      ? pb.collection("films").update(id, data)
+      : pb.collection("films").create(data));
+    return Astro.redirect(`/film/${film.id}`);
+  } catch (e) {
+    message = (e as ClientResponseError).message;
+  }
+}
+
+const personne = await pb.collection("personne").getFullList();
+
+const film = id
+  ? await Astro.locals.pb.collection("films").getOne(id)
+  : ({} as FilmsResponse);
+
+function formatDate(date: string) {
+  return date ? new Date(date).toISOString().split("T")[0] : "";
+}
+---
+
+<Layout pageTitle="Edition du film">
+  <h1>Modifier / ajouter un film</h1>
+  <form method="post" class="*:contents grid grid-cols-2">
+    <label
+      >titre
+      <input type="text" name="titre" value={film.titre} />
+    </label>
+    <label
+      >synopsis
+      <input type="text" name="synopsis" value={film.synopsis} />
+    </label>
+    <label class="m-3"
+      >langue
+      <select name="langue">
+        {
+          Object.entries(FilmsLangueOptions).map(([key, value]) => (
+            <option selected={film.langue}>{key}</option>
+          ))
+        }
+      </select>
+    </label>
+    <label
+      >Date de sortie
+      <input
+        type="date"
+        name="date_sortie"
+        value={formatDate(film.date_sortie)}
+      />
+    </label>
+    <label
+      >Durée
+      <input type="text" name="duree" value={film.duree} />
+    </label>
+    <!-- <label>
+      Producteur
+      <select name="producteur">
+        {
+          personne.map((personne) => (
+            <option selected={film.producteur}>{personne.nom}</option>
+          ))
+        }
+      </select>
+    </label> -->
+    <label>
+      Producteur
+      <select name="producteur">
+        <!-- <option value="720527e4grhrr5w">Harry Potter</option>
+        <option value="q00u4xevq1fz05l">Leonardo Di Caprio</option> -->
+        {
+          personne.map((personne) => (
+            <option
+              selected={personne.id === film.producteur}
+              value={personne.id}
+            >
+              {personne.nom}
+            </option>
+          ))
+        }
+      </select>
+    </label>
+    <label>
+      Scénariste.s
+      <div>
+        {
+          personne.map((personne) => (
+            <label>
+              <input
+                checked={(film.scenaristes ?? []).includes(personne.id)}
+                type="checkbox"
+                name="scenaristes"
+                value={personne.id}
+              />
+
+              {personne.nom}
+            </label>
+          ))
+        }
+      </div>
+    </label>
+    <button >{id ? "Modifier" : "Ajouter"}</button>
+  </form>
+</Layout>
