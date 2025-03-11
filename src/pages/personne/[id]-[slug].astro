@@ -7,63 +7,70 @@ import type {
   RolesResponse,
 } from "../../pocketbase-typegen";
 import LinkFilm from "../../components/LinkFilm.astro";
-
+import LinkPersonne from "../../components/LinkPersonne.astro";
 export const prerender = false;
 const id = Astro.params.id;
+type PersonneExpand = PersonneResponse<{
+  films_via_producteur?: FilmsResponse[];
+  films_via_scenaristes?: FilmsResponse[];
+  roles_via_acteur?: RolesResponse<{ films_via_role: FilmsResponse[] }>[];
+}>;
 const personne = await Astro.locals.pb
-  .collection<
-    PersonneResponse<{
-      films_via_producteur?: FilmsResponse[];
-      films_via_scenaristes?: FilmsResponse[];
-      roles_via_acteur?: RolesResponse<{ films_via_roles: FilmsResponse[] }>[];
-    }>
-  >("personne")
+  .collection<PersonneExpand>("personne")
   .getOne(id!, {
     expand:
-      "films_via_producteur, films_via_scenaristes, roles_via_acteur, films_via_roles",
+      "films_via_producteur, films_via_scenaristes, roles_via_acteur.films_via_role",
+  })
+  .catch((error) => {
+    console.error("erreur à la recup de la personne", id, error);
+    return {} as PersonneExpand;
   });
 ---
 
-<!-- <pre>
-    {JSON.stringify(personnes, null, 2)}
-</pre> -->
 <Layout pageTitle="Liste des personnes">
   <div>
     <h2>Personne : {personne.nom}</h2>
-    {Astro.locals.pb.authStore.isValid && <a href={`/personne/edit/${personne.id}`}>Edit</a>}
+    {
+      Astro.locals.pb.authStore.isValid && (
+        <a href={`/personne/edit/${personne.id}`}>Edit</a>
+      )
+    }
+
     {
       personne.expand?.roles_via_acteur && (
         <p>
           Rôles joués : {""}
           {personne.expand?.roles_via_acteur?.map((f) => (
             <>
-              <span>
-                {f.nom_role + " joué dans : "}
-                {f.expand?.films_via_roles && (
-                  <LinkFilm {...f.expand.films_via_roles[0]} />
-                )}
-              </span>
-            </L>
+              <span>{f.nom_role + " joué dans : "}</span>
+              {f.expand?.films_via_role && (
+                <LinkFilm {...f.expand.films_via_role[0]} />
+              )}
+            </>
           ))}
         </p>
       )
     }
-    <p>
-      Les films où il est producteur : {""}
-      {
-        personne.expand?.films_via_producteur?.map((film) => (
-          <span>{film.titre + " "}</span>
-        ))
-      }
-    </p>
 
-    <p>
-      Les films où il est scénariste : {""}
-      {
-        personne.expand?.films_via_scenaristes?.map((film) => (
-          <span>{film.titre + " "}</span>
-        ))
-      }
-    </p>
+    {
+      personne.expand?.films_via_producteur && (
+        <p>
+          Les films où il est producteur :{" "}
+          {personne.expand?.films_via_producteur.map((f) => (
+            <LinkFilm {...f} />
+          ))}
+        </p>
+      )
+    }
+    {
+      personne.expand?.films_via_scenaristes && (
+        <p>
+          Les films où il est scenariste :{" "}
+          {personne.expand?.films_via_scenaristes.map((f) => (
+            <LinkFilm {...f} />
+          ))}
+        </p>
+      )
+    }
   </div>
 </Layout>
