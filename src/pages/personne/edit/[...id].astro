@@ -7,9 +7,6 @@ import {
   PersonneProfessionOptions,
 } from "../../../pocketbase-typegen";
 import type { PersonneResponse } from "../../../pocketbase-typegen";
-import GithubSlugger from "github-slugger";
-
-const slugger = new GithubSlugger();
 export const prerender = false;
 const id = Astro.params.id;
 
@@ -76,21 +73,22 @@ function formatDate(date: string) {
         >Nom
         <input type="text" name="nom" value={personne.nom} />
       </label>
-      <label>
-        Profession
-        <select name="profession" multiple>
-          {
-            Object.entries(PersonneProfessionOptions).map(([key, value]) => (
-              <option
-                selected={personne.profession?.includes(value)}
+      <fieldset class="block! col-span-2">
+        <legend>Profession</legend>
+        {
+          Object.entries(PersonneProfessionOptions).map(([key, value]) => (
+            <label>
+              {key}
+              <input
+                type="checkbox"
+                name="profession"
+                checked={personne.profession?.includes(value)}
                 value={value}
-              >
-                {key}
-              </option>
-            ))
-          }
-        </select>
-      </label>
+              />
+            </label>
+          ))
+        }
+      </fieldset>
       <button>Envoyer</button>
     </form>
   </section>
